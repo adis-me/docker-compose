@@ -20,7 +20,8 @@ services:
     build:
       context: backend
       dockerfile: Dockerfile
-    depends_on: database
+    depends_on:
+      - database
     environment:
       SPRING_PROFILES_ACTIVE: local
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
