@@ -1,0 +1,13 @@
+HELP.md
+TODO.md
+
+# offerdesk directories
+offerdesk-apis
+offerdesk-branding
+offerdesk-frontend
+offerdesk-website
+
+# exclude db files
+!db-data/.keep
+.env
+data

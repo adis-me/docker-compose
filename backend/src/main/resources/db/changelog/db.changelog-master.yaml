@@ -1,0 +1,37 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-init-db
+      author: flink
+      comment: Initial database set-up
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/changes/001-init.sql
+            splitStatements: true
+            stripComments: true
+  - changeSet:
+      id: 002-roles
+      author: flink
+      comment: Add application roles
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/changes/002-add-roles.sql
+            splitStatements: true
+            stripComments: true
+  - changeSet:
+      id: 003-customers
+      author: flink
+      comment: Add customers roles
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/changes/003-add-customers.sql
+            splitStatements: true
+            stripComments: true
+  - changeSet:
+      id: 100-sample-data
+      author: flink
+      comment: Add some sample data
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/changes/100-sample-data.sql
+            splitStatements: true
+            stripComments: true

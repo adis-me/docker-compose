@@ -1,0 +1,12 @@
+#spring.datasource.url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/db-name?serverTimezone=Europe/Amsterdam
+#spring.datasource.username: username
+#spring.datasource.password: password
+
+spring:
+  liquibase:
+    database-change-log-table: database_change_log
+    database-change-log-lock-table: database_change_log_lock
+
+flink:
+  jwt:
+    issuer: flink

@@ -1,0 +1,38 @@
+### Authenticate and get token
+POST http://localhost:8080/api/sign-in
+Content-Type: application/json
+
+{
+  "username": "adis@live.nl",
+  "password": "secret"
+}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+
+    client.global.set("apiToken", response.body.token);
+%}
+
+### Get user profile
+GET http://localhost:8080/api/profile
+Content-Type: application/json
+Authorization: Bearer {{apiToken}}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+
+%}

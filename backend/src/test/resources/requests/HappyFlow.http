@@ -1,0 +1,214 @@
+### Sign up
+POST http://localhost:8080/api/sign-up
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "password": "secret",
+  "username": "{{$random.email}}"
+}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+
+    client.test("Response contains name and email", function () {
+        const hasName = response.body.hasOwnProperty("name");
+        const hasEmail = response.body.hasOwnProperty("email");
+        client.assert(hasName && hasEmail, "Expected body to contain name: [" + hasName + "] and email: [" + hasEmail + "]")
+    });
+
+    client.global.set("email", response.body.email);
+%}
+
+### Sign in
+POST http://localhost:8080/api/sign-in
+Content-Type: application/json
+
+{
+  "password": "secret",
+  "username": "{{email}}"
+}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+
+    client.global.set("apiToken", response.body.token);
+%}
+
+### Get profile
+GET http://localhost:8080/api/profile
+Content-Type: application/json
+Authorization: Bearer {{apiToken}}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+
+    client.test("Contains complete client profile information", function () {
+        const responseBody = response.body;
+        client.assert(responseBody.client.id != null, "Client id cannot be null")
+        client.assert(responseBody.client.tenant.id != null, "Tenant id cannot be null")
+        client.assert(responseBody.client.country.id != null, "Client is not linked to a (default) country")
+        client.assert(responseBody.roles[0].authority != null, "Authority cannot be null")
+        client.assert(responseBody.createdAt != null, "CreatedAt cannot be null")
+    });
+%}
+
+### Create a new customer
+POST http://localhost:8080/api/customers/create
+Content-Type: application/json
+Authorization: Bearer {{apiToken}}
+
+{
+  "name": "Test customer {{$random.uuid}}",
+  "address":"Testing street 1",
+  "postalCode": "0000XX",
+  "country": {
+    "id": "NL"
+  }
+}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+
+    client.test("Returns created customer", function () {
+        const responseBody = response.body;
+        client.assert(responseBody.id != null, "Customer id cannot be null")
+        client.assert(responseBody.name != null, "Customer name cannot be null")
+        client.assert(responseBody.country.id != null, "Customer is not linked to a country")
+        client.assert(responseBody.createdAt != null, "CreatedAt cannot be null")
+        client.assert(responseBody.website == null, "Expecting website to be null")
+    });
+
+    client.global.set("clientOneId", response.body.id);
+%}
+
+### Update client one
+PUT http://localhost:8080/api/customers/{{clientOneId}}/update
+Content-Type: application/json
+Authorization: Bearer {{apiToken}}
+
+{
+  "id": "{{clientOneId}}",
+  "name": "Test customer {{$random.uuid}}",
+  "address":"Testing street 1",
+  "postalCode": "0000XX",
+  "country": {
+    "id": "NL"
+  },
+  "chamberOfCommerceId":"COC-123456789",
+  "city":"Testcity",
+  "website": "www.customer-website.com",
+  "vatId": "VAT-123456789",
+  "email":"{{$random.email}}",
+  "invoiceEmail": "{{$random.email}}",
+  "phoneNumber":"{{$random.alphanumeric(10)}}",
+  "mobilePhoneNumber":"{{$random.alphanumeric(10)}}"
+}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+
+    client.test("Returns created customer", function () {
+        const responseBody = response.body;
+        client.assert(responseBody.id != null, "Customer id cannot be null")
+        client.assert(responseBody.name != null, "Customer name cannot be null")
+        client.assert(responseBody.country.id != null, "Customer is not linked to a country")
+        client.assert(responseBody.createdAt != null, "CreatedAt cannot be null")
+        client.assert(responseBody.website != null, "Website should be updated")
+        client.assert(responseBody.email != null, "Email should be updated")
+        client.assert(responseBody.invoiceEmail != null, "Invoice email should be updated")
+        client.assert(responseBody.vatId != null, "Vat id should be updated")
+        client.assert(responseBody.chamberOfCommerceId != null, "Chamber of commerce should be updated")
+    });
+
+    client.global.set("clientOneId", responseBody.id);
+%}
+
+### Filtering client based on the name
+GET http://localhost:8080/api/customers?text=Test
+Content-Type: application/json
+Authorization: Bearer {{apiToken}}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+
+    client.test("Returns a list of results", function () {
+        const responseBody = response.body;
+        client.assert(responseBody.content[0] != null, "Result list is not an array")
+        client.assert(responseBody.pageable != null, "Result list should contain a Pageable object")
+        client.assert(responseBody.totalElements != null, "Result list should contain a Pageable object")
+    });
+%}
+
+### Create new offer with empty offerlines
+POST http://localhost:8080/api/offers/create
+Content-Type: application/json
+Authorization: Bearer {{apiToken}}
+
+{
+  "offerId": "draft-01",
+  "customer": {
+    "id": 2
+  }
+}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+
+    client.test("New offer persisted successfully", function () {
+        const responseBody = response.body;
+        client.assert(responseBody.id != null, "Result should have a valid id")
+        client.assert(responseBody.offerId != null, "Result should have a valid offerId")
+        client.assert(responseBody.customer.id != null, "Result should have a valid customer id")
+        client.assert(responseBody.lines.length == 0, "Result should have no offer lines")
+    });
+%}

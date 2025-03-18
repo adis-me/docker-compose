@@ -1,0 +1,39 @@
+### Get all clients
+GET http://localhost:8080/api/clients/all
+Content-Type: application/json
+Authorization: Bearer {{apiToken}}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+
+%}
+
+### Create a client
+POST http://localhost:8080/api/clients/create
+Content-Type: application/json
+Authorization: Bearer {{apiToken}}
+
+{
+  "name": "Foo client",
+  "email": "foo-client@example.com",
+  "vatId": "NL123456789",
+  "chamberOfCommerceId": "KVK-123456789"
+}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+%}
